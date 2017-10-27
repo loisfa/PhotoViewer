@@ -16,9 +16,11 @@ public class PathNode extends Node {
 	public PathNode(double x, double y, double imageWidth, double imageHeight) {
 		super();
 		generalPath.moveTo(x,y);
+		System.out.println("Created a new PathNode");
 	}
 
 	public void addPoint(Point2D point) {
+		System.out.println("adding point for path");
 		int x = (int) point.getX();
 		int y = (int) point.getY();
 
@@ -45,6 +47,7 @@ public class PathNode extends Node {
 		g2.setPaint(strokeColor);
 		g2.draw(generalPath);
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		System.out.println("painting");
 	}
 	
 }

@@ -131,6 +131,8 @@ public class PhotoComponent extends JComponent implements Serializable {
 		public myMouseMotionListener() {}
 
 		public void mouseDragged(MouseEvent arg0) {
+			
+			//System.out.println("Dragging the mouse");
 
 			// IF THE IMAGE IS FLIPPED
 			if (isFlipped == true) {
