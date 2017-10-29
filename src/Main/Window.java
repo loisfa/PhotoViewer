@@ -316,10 +316,11 @@ public class Window extends JFrame {
 				int returnVal = fileChooser.showOpenDialog(frame);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					File file = fileChooser.getSelectedFile();
+					String uri = file.getPath();
 					try {
-						photoComponent.loadImage(ImageIO.read(file));
-						photoStrip.addIcon(ImageIO.read(file), file.getPath());
-						photoBrowser.addIcon(ImageIO.read(file), file.getPath());
+						photoComponent.loadImage(uri /*ImageIO.read(file)*/);
+						photoStrip.addIcon(ImageIO.read(file), uri);
+						photoBrowser.addIcon(ImageIO.read(file), uri);
 						revalidate();
 						repaint();
 

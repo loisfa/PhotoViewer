@@ -26,8 +26,7 @@ public class ListPhotos{
 		for(File f: list){
 			try {
 				Image image = ImageIO.read(f);
-				listImage.add(image);
-				
+				listImage.add(image);				
 				String uri = f.getPath();
 				listUri.add(uri);
 			}catch(IOException i) {

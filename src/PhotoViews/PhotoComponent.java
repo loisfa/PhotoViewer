@@ -36,14 +36,10 @@ import Nodes.TextNode;
 @SuppressWarnings("serial")
 public class PhotoComponent extends JComponent implements Serializable {
 
-	private boolean isImage;
 	private boolean isFlipped;
 
-	private Image image;
-	private int imageOriginalWidth;
-	private int imageOriginalHeight;
-	private int imageWidth;
-	private int imageHeight;
+	private MyImage image;
+	
 	private RootNode rootNode;
 	private Panel panel;
 	private int offsetX, offsetY;
@@ -71,8 +67,10 @@ public class PhotoComponent extends JComponent implements Serializable {
 		this.sizeStroke = sizeStroke;
 
 		// import image
+		this.image = new MyImage();
 		String uri = "./photos/city1.jpg";
-		this.setImage(uri);
+		this.loadImage(uri);
+		// this.setImage(this.image.getImage());
 		affineTransform = new AffineTransform();		
 
 		// add listeners
@@ -81,44 +79,29 @@ public class PhotoComponent extends JComponent implements Serializable {
 		this.setFocusable(true);
 		this.addKeyListener(new myKeyListener());
 	}
-
-	private void setImage(String uri) {
+	
+	public void loadImage(String uri) {
 		try {
+			
 			BufferedImage buffImage = ImageIO.read(new File(uri));
-			this.loadImage(buffImage);
+			this.image.setImage(buffImage);
+			this.setSize(this.image.getWidth(), this.image.getHeight());
+			this.setPreferredSize(new Dimension (this.image.getWidth(), this.image.getHeight()));
+			this.repaint();
+			this.initSceneGraph();
+			
 		} catch (Exception e) {
+			
 			e.printStackTrace();
-			System.out.println("image not caught");   
+			System.out.println("Image "+uri+" not caught");   
+			
 		}
 	}
 
-	public void deleteImage() {
-		this.isImage=false;
-		this.isFlipped=false;
-		repaint();
-	}	
 
-	public void loadImage(BufferedImage buffImage) {
-
-		// a buffered image is necessary to get the real (and updated) dimension
-		this.image = buffImage;
-		isImage=true;
-
-		this.imageOriginalWidth = buffImage.getWidth();
-		this.imageOriginalHeight = buffImage.getHeight();
-		this.imageWidth = this.imageOriginalWidth;
-		this.imageHeight = this.imageOriginalHeight;
-
-		this.setSize(imageWidth, imageHeight);
-		this.setPreferredSize(new Dimension (imageWidth, imageHeight));
-
-		repaint();
-		initSceneGraph();
-	}
-
-
-	private void initSceneGraph() {			
-		rootNode = new RootNode(imageWidth, imageHeight, strokeColor, fillColor);
+	private void initSceneGraph() {		
+		System.out.println("initScene");
+		rootNode = new RootNode(this.image.getWidth(), this.image.getHeight(), strokeColor, fillColor);
 		panel = new Panel(rootNode);
 		drawsPath = false;
 		this.add(panel);		
@@ -143,19 +126,19 @@ public class PhotoComponent extends JComponent implements Serializable {
 				if (drawsPath == false) {
 
 					// IF THE CURSOR IN ON THE IMAGE ZONE
-					if (0<xPos && xPos < imageWidth &&
-							0<yPos && yPos < imageHeight)
+					if (0<xPos && xPos < image.getWidth() &&
+							0<yPos && yPos < image.getHeight())
 					{
 						// ACCORDING TO THE TYPE OF SHAPE (CHOSEN BY THE USER)
 						if (typeDrawing==0) {
 							currentForm = new PathNode(xPos/zoom, yPos/zoom,
-									(int) imageWidth, (int) imageHeight/*, sizeStroke*/);
+									(int) image.getWidth(), (int) image.getHeight()/*, sizeStroke*/);
 						} else if (typeDrawing==1) {
 							currentForm = new RectNode(xPos/zoom, yPos/zoom,
-									(int) imageWidth, (int) imageHeight/*, sizeStroke*/);
+									(int) image.getWidth(), (int) image.getHeight()/*, sizeStroke*/);
 						} else if (typeDrawing==2) {
 							currentForm = new EllipseNode(xPos/zoom, yPos/zoom,
-									(int) imageWidth, (int) imageHeight/*, sizeStroke*/);
+									(int) image.getWidth(), (int) image.getHeight()/*, sizeStroke*/);
 						}
 						currentForm.setStrokeColor(strokeColor);
 						currentForm.setFillColor(fillColor);
@@ -173,7 +156,7 @@ public class PhotoComponent extends JComponent implements Serializable {
 				} else if (drawsPath == true) {
 
 					Point2D currentPoint = new Point2D.Double(xPos/zoom, yPos/zoom);
-					if (xPos < imageWidth && yPos < imageHeight)
+					if (xPos < image.getWidth() && yPos < image.getHeight())
 					{
 						currentForm.addPoint(currentPoint);
 						repaint();
@@ -230,8 +213,9 @@ public class PhotoComponent extends JComponent implements Serializable {
 					@Override
 					public void run() {						
 						isAlreadyOneClick = false;
+						System.out.println("stop dble click");
 					}
-				}, 400);
+				}, 300);
 			}
 		}
 
@@ -277,8 +261,8 @@ public class PhotoComponent extends JComponent implements Serializable {
 	}
 	public void setZoom(int intZoom) {
 		this.zoom = (double) intZoom/100;
-		this.imageWidth = (int) Math.round(imageOriginalWidth*zoom);
-		this.imageHeight= (int) Math.round(imageOriginalHeight*zoom);
+		this.image.setWidth( (int) Math.round(this.image.getOriginalWidth()*zoom) );
+		this.image.setHeight( (int) Math.round(this.image.getOriginalHeight()*zoom) );
 		repaint();
 	}
 	public void setTypeDrawing(String typeDrawing) {
@@ -297,7 +281,7 @@ public class PhotoComponent extends JComponent implements Serializable {
 		super.paintComponent(g);  
 		setAffineTransform();
 
-		if (isImage==true) {
+		if (this.image.isImage()==true) {
 			if (isFlipped==false) {	
 				Graphics2D g2 = (Graphics2D) g;	
 				// ALPHA
@@ -308,9 +292,9 @@ public class PhotoComponent extends JComponent implements Serializable {
 				g.clearRect(0,0,this.getWidth(),this.getHeight());				 
 				g2 = setGradient(g);
 				g2.fillRect(0, 0, this.getWidth(), this.getHeight());
-				g.drawImage(image, offsetX, offsetY,
-						(int) Math.round(imageWidth), 
-						(int) Math.round(imageHeight), this);
+				g.drawImage(this.image.getImage(), offsetX, offsetY,
+						(int) Math.round(this.image.getWidth()), 
+						(int) Math.round(this.image.getHeight()), this);
 
 			} else if (isFlipped==true) {
 				Graphics2D g2 = (Graphics2D) g;	
@@ -323,11 +307,11 @@ public class PhotoComponent extends JComponent implements Serializable {
 				g2.fillRect(0, 0, this.getWidth(), this.getHeight());
 				g.setColor(Color.WHITE);
 				g.fillRect(offsetX,offsetY,
-						(int) Math.round(imageWidth),
-						(int) Math.round(imageHeight));
+						(int) Math.round(this.image.getWidth()),
+						(int) Math.round(this.image.getHeight()));
 				rootNode.paint(g);
 			}
-		} else if (isImage == false) {
+		} else if (this.image.isImage() == false) {
 			g.clearRect(0,0,this.getWidth(),this.getHeight());				 
 			Graphics2D g2 = (Graphics2D) g;				
 			g2 = setGradient(g);
@@ -356,12 +340,20 @@ public class PhotoComponent extends JComponent implements Serializable {
 	private void setAffineTransform() {
 
 		affineTransform = new AffineTransform();
-		affineTransform.translate((this.getWidth()-this.imageWidth)/2, 
-				(this.getHeight()-this.imageHeight)/2);
+		affineTransform.translate((this.getWidth()-this.image.getWidth())/2, 
+				(this.getHeight()-this.image.getHeight())/2);
 		affineTransform.scale(zoom, zoom);
+		System.out.println(affineTransform);
+		System.out.println(rootNode);
 		rootNode.setAffineTransformation(affineTransform);
 		offsetX = (int) affineTransform.getTranslateX();
 		offsetY = (int) affineTransform.getTranslateY();
+	}
+	
+	public void deleteImage() {
+		this.image.deleteImage();
+		this.isFlipped=false;
+		repaint();
 	}
 
 
@@ -369,7 +361,7 @@ public class PhotoComponent extends JComponent implements Serializable {
 		if (isFlipped==true) {
 			isFlipped=false;
 		}
-		else if (isFlipped==false && isImage==true) {
+		else if (isFlipped==false && this.image.isImage()==true) {
 			isFlipped=true;
 		}
 		this.revalidate();

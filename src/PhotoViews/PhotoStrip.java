@@ -76,12 +76,7 @@ public class PhotoStrip extends JPanel {
 		button.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0) {
 				// TODO Auto-generated method stub
-				try {
-					photoComponent.loadImage(ImageIO.read(new File(uri)));
-				} catch(Exception e) {
-					e.printStackTrace();
-				}
-
+				photoComponent.loadImage(uri);
 			}
 		});
 	}
